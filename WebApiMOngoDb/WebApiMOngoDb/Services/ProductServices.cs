@@ -16,25 +16,32 @@ namespace WebApiMOngoDb.Services
                 (productServices.Value.ProductCollectionName);
         }
 
-        public async Task<List<Product>> GetProductsAsync() => 
-            await _productCollection.Find(x => true).ToListAsync();
+        public async Task<List<Product>> GetProductsAsync()
+        {
+            return await _productCollection.Find(x => true).ToListAsync();
+        }
 
-        public async Task<Product> GetProductByIdAsync(string id) =>
-            await _productCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        public async Task<Product> GetProductByIdAsync(string id)
+        {
+            return await _productCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        }
 
         public async Task<string> CreateProductAsync(Product product)
         {
             await _productCollection.InsertOneAsync(product);
-            
-            
-            return product.Id;
+            return product.Id ?? "The product creation failed. Please, try again later.";
         }
 
+        public async Task<string> UpdateProductAsync(Product modifiedProduct)
+        {
+            var result = await _productCollection.ReplaceOneAsync(x => x.Id == modifiedProduct.Id, modifiedProduct);
+            return result.ToString() ?? "The product update failed. Please, try again later.";
+        }
 
-
-
-
-        public async void DeleteProductByIdAsync(string id) =>
-            await _productCollection.DeleteOne<Product>
+        public async Task<string> RemoveProductAsync(string id)
+        {
+            var result = await _productCollection.DeleteOneAsync(x => x.Id == id);
+            return result.ToString() ?? "The product delection failed. Please, try again later.";
+        }
     }
 }
